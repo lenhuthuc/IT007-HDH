@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3 Thuật toán Lập lịch CPU</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Consolas', 'Courier New', monospace;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            max-width: 100%;
+            margin: 0 auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border-radius: 15px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .algorithms {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .algorithm-box {
+            border: 3px solid #667eea;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .algorithm-box h2 {
+            text-align: center;
+            color: white;
+            background: #667eea;
+            margin: -20px -20px 20px -20px;
+            padding: 15px;
+            border-radius: 9px 9px 0 0;
+            font-size: 1.3em;
+        }
+        
+        .diagram-wrapper {
+            overflow: auto;
+            max-height: 850px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button {
+            padding: 12px 25px;
+            margin: 0 8px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            cursor: pointer;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        @media (max-width: 1400px) {
+            .algorithms {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Ba Thuật toán Lập lịch CPU</h1>
+        
+        <div class="controls">
+            <button onclick="zoomIn()">🔍 Phóng to</button>
+            <button onclick="resetZoom()">↺ Đặt lại 100%</button>
+            <button onclick="zoomOut()">🔍 Thu nhỏ</button>
+        </div>
+        
+        <div class="algorithms" id="diagrams">
+            <!-- SJF -->
+            <div class="algorithm-box">
+                <h2>SJF - Shortest Job First</h2>
+                <div class="diagram-wrapper">
+                    <div class="mermaid">
+flowchart TD
+    Start(("start"))
+    Input[/"Nhập n và mảng process"/]
+    SortArrival[/"Sắp xếp theo arrival time"/]
+    InitVar["n = số tiến trình<br/>Input[n], ReadyQueue[n], Terminated[n]<br/>iRemain = n, iReady = 0, iTerminated = 0"]
+    PushFirst["pushProcess(iReady, ReadyQueue, Input[0])<br/>removeProcess(iRemain, 0, Input)"]
+    CalcFirst["ReadyQueue[0].iStart = ReadyQueue[0].iArrival<br/>ReadyQueue[0].iFinish = iStart + iBurst<br/>ReadyQueue[0].iResponse = iStart - iArrival<br/>ReadyQueue[0].iWaiting = iResponse<br/>ReadyQueue[0].iTaT = iFinish - iArrival"]
+    
+    CheckTerminated{"iTerminated < n"}
+    CheckRemain{"iRemain > 0"}
+    CheckArrival{"Input[0].iArrival <= ReadyQueue[0].iFinish"}
+    PushReady["pushProcess(iReady, ReadyQueue, Input[0])<br/>removeProcess(iRemain, 0, Input)"]
+    CheckReady1{"iReady > 1"}
+    SortBurst[/"Sắp xếp ReadyQueue[1..iReady-1]<br/>theo burst time"/]
+    CheckReady2{"iReady > 0"}
+    MoveTerminated["pushProcess(iTerminated, Terminated, ReadyQueue[0])<br/>removeProcess(iReady, 0, ReadyQueue)"]
+    CheckReady3{"iReady > 0"}
+    CheckArrival2{"ReadyQueue[0].iArrival <= Terminated[iTerminated-1].iFinish"}
+    StartPrev["ReadyQueue[0].iStart = Terminated[iTerminated-1].iFinish"]
+    StartArrival["ReadyQueue[0].iStart = ReadyQueue[0].iArrival"]
+    CalcTimes["ReadyQueue[0].iFinish = iStart + iBurst<br/>ReadyQueue[0].iResponse = iStart - iArrival<br/>ReadyQueue[0].iWaiting = iResponse<br/>ReadyQueue[0].iTaT = iFinish - iArrival"]
+    
+    Output[/"Xuất Gantt Chart<br/>Sắp xếp theo PID<br/>Tính AWT và ATaT"/]
+    End(("End"))
+    
+    Start --> Input
+    Input --> SortArrival
+    SortArrival --> InitVar
+    InitVar --> PushFirst
+    PushFirst --> CalcFirst
+    CalcFirst --> CheckTerminated
+    
+    CheckTerminated -->|FALSE| Output
+    Output --> End
+    
+    CheckTerminated -->|TRUE| CheckRemain
+    CheckRemain -->|TRUE| CheckArrival
+    CheckArrival -->|TRUE| PushReady
+    PushReady --> CheckRemain
+    CheckArrival -->|FALSE| CheckReady1
+    CheckRemain -->|FALSE| CheckReady1
+    
+    CheckReady1 -->|TRUE| SortBurst
+    SortBurst --> CheckReady2
+    CheckReady1 -->|FALSE| CheckReady2
+    
+    CheckReady2 -->|TRUE| MoveTerminated
+    MoveTerminated --> CheckReady3
+    CheckReady3 -->|TRUE| CheckArrival2
+    CheckArrival2 -->|TRUE| StartPrev
+    CheckArrival2 -->|FALSE| StartArrival
+    StartPrev --> CalcTimes
+    StartArrival --> CalcTimes
+    CalcTimes --> CheckTerminated
+    CheckReady3 -->|FALSE| CheckTerminated
+    CheckReady2 -->|FALSE| CheckTerminated
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SRTF -->
+            <div class="algorithm-box">
+                <h2>SRTF - Shortest Remaining Time First</h2>
+                <div class="diagram-wrapper">
+                    <div class="mermaid">
+flowchart TD
+    Start(("start"))
+    Input[/"Nhập n và mảng process"/]
+    InitVar["n = số tiến trình<br/>ProcessSRTF processes[n]<br/>Terminated[n]<br/>iTerminated = 0<br/>currentTime = 0<br/>completed = 0"]
+    InitProcess["for i = 0 to n-1<br/>processes[i].process = P[i]<br/>processes[i].remainingBurst = P[i].iBurst<br/>processes[i].iStart = -1"]
+    
+    CheckCompleted{"completed < n"}
+    InitMin["minIdx = -1<br/>minBurst = infinity"]
+    FindMin["for i = 0 to n-1<br/>if processes[i].iArrival <= currentTime<br/>AND processes[i].remainingBurst > 0<br/>AND processes[i].remainingBurst < minBurst<br/>minIdx = i<br/>minBurst = processes[i].remainingBurst"]
+    CheckFound{"minIdx == -1"}
+    IncTime["currentTime++"]
+    CheckStart{"processes[minIdx].iStart == -1"}
+    SetStart["processes[minIdx].iStart = currentTime"]
+    Execute["processes[minIdx].remainingBurst--<br/>currentTime++"]
+    CheckDone{"processes[minIdx].remainingBurst == 0"}
+    CalcTimes["processes[minIdx].iFinish = currentTime<br/>processes[minIdx].iWaiting = iFinish - iArrival - iBurst<br/>processes[minIdx].iTaT = iFinish - iArrival<br/>processes[minIdx].iResponse = iStart - iArrival<br/>Terminated[iTerminated++] = processes[minIdx]<br/>completed++"]
+    
+    Output[/"Sắp xếp Terminated theo PID<br/>In kết quả<br/>Tính AWT và ATaT"/]
+    End(("End"))
+    
+    Start --> Input
+    Input --> InitVar
+    InitVar --> InitProcess
+    InitProcess --> CheckCompleted
+    
+    CheckCompleted -->|FALSE| Output
+    Output --> End
+    
+    CheckCompleted -->|TRUE| InitMin
+    InitMin --> FindMin
+    FindMin --> CheckFound
+    CheckFound -->|TRUE| IncTime
+    IncTime --> CheckCompleted
+    CheckFound -->|FALSE| CheckStart
+    CheckStart -->|TRUE| SetStart
+    SetStart --> Execute
+    CheckStart -->|FALSE| Execute
+    Execute --> CheckDone
+    CheckDone -->|TRUE| CalcTimes
+    CalcTimes --> CheckCompleted
+    CheckDone -->|FALSE| CheckCompleted
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round Robin -->
+            <div class="algorithm-box">
+                <h2>RR - Round Robin</h2>
+                <div class="diagram-wrapper">
+                    <div class="mermaid">
+flowchart TD
+    Start(("start"))
+    InputQuantum[/"Nhập quantum"/]
+    Input[/"Nhập n và mảng process"/]
+    InitVar["n = số tiến trình<br/>ProcessRR processes[n]<br/>queue[100]<br/>front = 0, rear = 0<br/>Terminated[n]<br/>iTerminated = 0<br/>currentTime = 0"]
+    InitProcess["for i = 0 to n-1<br/>processes[i].process = P[i]<br/>processes[i].remainingBurst = P[i].iBurst<br/>processes[i].iStart = -1<br/>processes[i].inQueue = 0"]
+    Sort[/"Sắp xếp processes theo arrival time"/]
+    Enqueue1["queue[rear++] = 0<br/>processes[0].inQueue = 1"]
+    
+    CheckQueue{"front < rear"}
+    Dequeue["idx = queue[front++]"]
+    CheckStart{"processes[idx].iStart == -1"}
+    SetStart["processes[idx].iStart = currentTime"]
+    CalcSlice["timeSlice = min(processes[idx].remainingBurst, quantum)"]
+    Execute["processes[idx].remainingBurst -= timeSlice<br/>currentTime += timeSlice"]
+    EnqueueNew["for i = 0 to n-1<br/>if NOT processes[i].inQueue<br/>AND processes[i].iArrival <= currentTime<br/>AND processes[i].remainingBurst > 0<br/>queue[rear++] = i<br/>processes[i].inQueue = 1"]
+    CheckRemaining{"processes[idx].remainingBurst > 0"}
+    EnqueueBack["queue[rear++] = idx"]
+    CalcComplete["processes[idx].iFinish = currentTime<br/>processes[idx].iWaiting = iFinish - iArrival - iBurst<br/>processes[idx].iTaT = iFinish - iArrival<br/>processes[idx].iResponse = iStart - iArrival<br/>Terminated[iTerminated++] = processes[idx]"]
+    
+    Output[/"Sắp xếp Terminated theo PID<br/>In kết quả<br/>Tính AWT và ATaT"/]
+    End(("End"))
+    
+    Start --> InputQuantum
+    InputQuantum --> Input
+    Input --> InitVar
+    InitVar --> InitProcess
+    InitProcess --> Sort
+    Sort --> Enqueue1
+    Enqueue1 --> CheckQueue
+    
+    CheckQueue -->|FALSE| Output
+    Output --> End
+    
+    CheckQueue -->|TRUE| Dequeue
+    Dequeue --> CheckStart
+    CheckStart -->|TRUE| SetStart
+    SetStart --> CalcSlice
+    CheckStart -->|FALSE| CalcSlice
+    CalcSlice --> Execute
+    Execute --> EnqueueNew
+    EnqueueNew --> CheckRemaining
+    CheckRemaining -->|TRUE| EnqueueBack
+    EnqueueBack --> CheckQueue
+    CheckRemaining -->|FALSE| CalcComplete
+    CalcComplete --> CheckQueue
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+
+        let currentZoom = 1;
+
+        function zoomIn() {
+            if (currentZoom < 1.5) {
+                currentZoom += 0.1;
+                applyZoom();
+            }
+        }
+
+        function zoomOut() {
+            if (currentZoom > 0.5) {
+                currentZoom -= 0.1;
+                applyZoom();
+            }
+        }
+
+        function resetZoom() {
+            currentZoom = 1;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            document.getElementById('diagrams').style.transform = `scale(${currentZoom})`;
+            document.getElementById('diagrams').style.transformOrigin = 'top center';
+        }
+    </script>
+</body>
+</html>
